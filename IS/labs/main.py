@@ -1,7 +1,9 @@
+from ant_colony_algorithm import ant_colony_algorithm
 import matplotlib.pyplot as plt
 import networkx as nx
 from networkx import NetworkXNoPath
-from collections import deque
+
+from astar_algorithm import astar
 
 G = nx.Graph()
 MESSAGE_ERROR = 'Вы ввели что-то не то, попробуйте еще раз!'
@@ -9,11 +11,18 @@ START_NODE = None
 END_NODE = None
 
 
-def draw_graph():
+def draw_graph(g):
+    position = pos
     colors = set_color_map()
-    nx.draw(G, pos, with_labels=True, font_color="whitesmoke", node_size=500, node_color=colors)
-    labels = nx.get_edge_attributes(G, 'weight')
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
+
+    nx.draw_networkx(g, pos=position, node_color=colors, with_labels=True, node_size=800, font_size=14)
+    edge_labels = nx.get_edge_attributes(g, 'weight')
+    nx.draw_networkx_edge_labels(g, position, edge_labels=edge_labels)
+
+    node_labels = nx.get_node_attributes(g, 'heuristic')
+    for node, h in node_labels.items():
+        x, y = position[node]
+        plt.text(x + 0.1, y + 0.1, s=h, horizontalalignment='center', color='blue', fontsize=13)
     plt.show()
 
 
@@ -46,18 +55,21 @@ def is_correct_edge(nodes_to_join, nodes_lst):
     return False
 
 
-def name_node():
-    graph_nodes = list(G.nodes())
+def set_heuristic(node_name):
     while True:
         while True:
             try:
-                name = int((input("Введите название для узла(цифру): ")))
-
-                if name in graph_nodes:
-                    raise ValueError
-                return name
+                return int((input(f'Введите эмпирическую стоимость для узла {node_name}: ')))
             except ValueError:
                 print("Попробуйте еще раз!")
+
+
+def get_integer(s):
+    while True:
+        try:
+            return int(input(s))
+        except ValueError:
+            print("Вы ввели не целое число\nПопробуйте еще раз")
 
 
 def add_edge():
@@ -101,11 +113,11 @@ def set_color_map():
     c_m = []
     for node in G.nodes:
         if node is START_NODE:
-            c_m.append('#55ff12')
+            c_m.append('#2d912c')
         elif node == END_NODE:
             c_m.append('#ff1212')
         else:
-            c_m.append('#ff7af2')
+            c_m.append('#2bc8fc')
     return c_m
 
 
@@ -115,112 +127,16 @@ def print_adjacency_matrix():
     print(matrix)
 
 
-# def a_star_algorithm(graph, start, stop):
-#     d = {
-#         1: {
-#             2: {'weight': 12},
-#             5: {'weight': 21}
-#         },
-#         2: {
-#             1: {'weight': 12},
-#             3: {'weight': 32}
-#         },
-#         3: {
-#             2: {'weight': 32}
-#         },
-#         4: {},
-#         5: {
-#             1: {'weight': 21}
-#         }
-#     }
-#     # In this open_lst is a lisy of nodes which have been visited, but who's
-#     # neighbours haven't all been always inspected, It starts off with the start
-#     # node
-#     # And closed_lst is a list of nodes which have been visited
-#     # and who's neighbors have been always inspected
-#     open_lst = set([start])
-#     closed_lst = set([])
-#
-#     # poo has present distances from start to all other nodes
-#     # the default value is +infinity
-#     poo = {}
-#     poo[start] = 0
-#
-#     # par contains an adjac mapping of all nodes
-#     par = {}
-#     par[start] = start
-#
-#     while len(open_lst) > 0:
-#         n = None
-#
-#         # it will find a node with the lowest value of f() -
-#         for v in open_lst:
-#             if n is None or poo[v] + graph[v] < poo[n] + self.h(n):
-#                 n = v;
-#
-#         if n == None:
-#             print('Path does not exist!')
-#             return None
-#
-#         # if the current node is the stop
-#         # then we start again from start
-#         if n == stop:
-#             reconst_path = []
-#
-#             while par[n] != n:
-#                 reconst_path.append(n)
-#                 n = par[n]
-#
-#             reconst_path.append(start)
-#
-#             reconst_path.reverse()
-#
-#             print('Path found: {}'.format(reconst_path))
-#             return reconst_path
-#
-#         # for all the neighbors of the current node do
-#         for (m, weight) in self.get_neighbors(n):
-#             # if the current node is not presentin both open_lst and closed_lst
-#             # add it to open_lst and note n as it's par
-#             if m not in open_lst and m not in closed_lst:
-#                 open_lst.add(m)
-#                 par[m] = n
-#                 poo[m] = poo[n] + weight
-#
-#             # otherwise, check if it's quicker to first visit n, then m
-#             # and if it is, update par data and poo data
-#             # and if the node was in the closed_lst, move it to open_lst
-#             else:
-#                 if poo[m] > poo[n] + weight:
-#                     poo[m] = poo[n] + weight
-#                     par[m] = n
-#
-#                     if m in closed_lst:
-#                         closed_lst.remove(m)
-#                         open_lst.add(m)
-#
-#         # remove n from the open_lst, and add it to closed_lst
-#         # because all of his neighbors were inspected
-#         open_lst.remove(n)
-#         closed_lst.add(n)
-#
-#     print('Path does not exist!')
-#     return None
-
-
-def ant_colony_algorithm():
-    ...
-
-
 # count_nodes = get_count_node()
 count_nodes = 5
-
+heuristic_lst = []
 for i in range(count_nodes):
     print(f"#{i + 1}", end="\t")
-    name = name_node()
-    G.add_node(name)
+    G.add_node(i + 1)
+    heuristic_lst.append(set_heuristic(i + 1))
+nx.set_node_attributes(G, {node: heuristic_lst[i] for i, node in enumerate(G.nodes())}, 'heuristic')
 pos = nx.spring_layout(G)
-draw_graph()
+draw_graph(G)
 
 while True:
     choice = input("Хотите добавить ребро?\n1. Да\n2. Нет\n>>> ")
@@ -229,7 +145,7 @@ while True:
             if check_count_edges():
                 edge, weight = add_edge()
                 G.add_edge(*edge, weight=weight)
-                draw_graph()
+                draw_graph(G)
             else:
                 print("Вы больше не можете добавить ребро")
         case '2':
@@ -247,22 +163,52 @@ while True:
         print('Эти вершины не соединены, введите другие')
 
 set_color_map()
-draw_graph()
+draw_graph(G)
 print_adjacency_matrix()
 
+graph_without_heuristic = nx.to_dict_of_dicts(G)
+h = nx.get_node_attributes(G, 'heuristic')
+graph = {}
+for node in graph_without_heuristic:
+    graph[node] = {}
+    for neighbor in graph_without_heuristic[node]:
+        weight = graph_without_heuristic[node][neighbor]['weight']
+        heuristic = h[neighbor]
+        graph[node][neighbor] = {'weight': weight, 'heuristic': heuristic}
+
+
 while True:
-    choice = input("Выберите алгоритм:\n1. A*\n2. Агоритм муравьиной колонии\n>>> ")
+    choice = input("Выберите алгоритм:\n1. A*\n2. Агоритм муравьиной колонии\n3. Выход>>> ")
     match choice:
         case '1':
-            # a_star_algorithm()
-            print(nx.to_dict_of_dicts(G))
-            print(nx.astar_path(G, START_NODE, END_NODE))
-            break
+            path, cost = astar(graph, START_NODE, END_NODE)
+            print("Кртотчайший путь: ", end='')
+            print(*path, sep=' -> ')
+            print("Цена пути:", cost)
+
         case '2':
-            ant_colony_algorithm()
+            num_ants = get_integer('Введите количество муравьев: ')
+            num_iterations = get_integer('Введите количество итераций: ')
+            evaporation_rate = 0.5
+            alpha = 1
+            beta = 2
+            Q = 1
+
+            path, best_path_length, search_log = ant_colony_algorithm(graph, START_NODE, END_NODE, num_ants,
+                                                                      num_iterations,
+                                                                      evaporation_rate, alpha, beta, Q)
+
+            print("Кротчайший путь:", end='')
+            print(*path, sep=' -> ')
+            print("Цена пути:", best_path_length)
+            for log in search_log:
+                print(f"Итерация {log['iteration']}:")
+                print('\tФерамоны:', log['pheramone'])
+                print('\tДоступные пути:', log['paths'])
+                print('\tДлина путей:', log['path_lengths'])
+        case '3':
             break
         case __:
             print(MESSAGE_ERROR)
 
-draw_graph()
-
+draw_graph(G)
