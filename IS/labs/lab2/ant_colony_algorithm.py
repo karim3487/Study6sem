@@ -1,4 +1,28 @@
 import random
+from tabulate import tabulate
+
+
+def print_pher(pheromone):
+    headers = [''] + list(pheromone.keys())
+    rows = []
+
+    for row_key, row_data in pheromone.items():
+        row = [row_key] + [f"{row_data.get(column_key, '–'):.5f}" if row_data.get(column_key) is not None else '–' for
+                           column_key in headers[1:]]
+        rows.append(row)
+
+    table = tabulate(rows, headers, tablefmt="grid")
+    print(table)
+
+
+def print_paths(paths, path_lengths):
+    table_data = [
+        ["Путь"] + [str(row) for row in paths],
+        ["Значения"] + [str(value) for value in path_lengths]
+    ]
+
+    table = tabulate(table_data, tablefmt="grid")
+    print(table)
 
 
 def ant_colony_algorithm(graph, start_node, end_node, num_ants, num_iterations, evaporation_rate, alpha, beta, Q):
@@ -25,19 +49,21 @@ def ant_colony_algorithm(graph, start_node, end_node, num_ants, num_iterations, 
                 best_path = path
                 best_path_length = path_length
 
+        print("Итерация", i + 1)
+
+        print("Феромоны:")
+        print_pher(pheromone)
+
+        print("Пути:")
+        print_paths(paths, path_lengths)
+
         # Запись информации о поиске для первых 5 итераций
-        if i > 95:
-            search_log.append({
-                'iteration': i + 1,
-                'pheromone': pheromone,
-                'paths': paths,
-                'path_lengths': path_lengths
-            })
+        # if i > :
 
         # Обновление феромонов на ребрах
         update_pheromone(pheromone, paths, path_lengths, evaporation_rate, Q)
 
-    return best_path, best_path_length, search_log
+    return best_path, best_path_length
 
 
 def initialize_pheromone(graph):

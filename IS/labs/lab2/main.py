@@ -185,30 +185,24 @@ while True:
             print("Кртотчайший путь: ", end='')
             print(*path, sep=' -> ')
             print("Цена пути:", cost)
-
+            draw_graph(G)
         case '2':
             num_ants = get_integer('Введите количество муравьев: ')
             num_iterations = get_integer('Введите количество итераций: ')
-            evaporation_rate = 0.5
-            alpha = 1
-            beta = 2
+            evaporation_rate = 0.8
+            alpha = 1.2
+            beta = 0.2
             Q = 1
 
-            path, best_path_length, search_log = ant_colony_algorithm(graph, START_NODE, END_NODE, num_ants,
-                                                                      num_iterations,
-                                                                      evaporation_rate, alpha, beta, Q)
+            path, best_path_length = ant_colony_algorithm(graph, START_NODE, END_NODE, num_ants,
+                                                          num_iterations,
+                                                          evaporation_rate, alpha, beta, Q)
 
-            print("Кротчайший путь:", end='')
+            print("Кротчайший путь: ", end='')
             print(*path, sep=' -> ')
             print("Цена пути:", best_path_length)
-            for log in search_log:
-                print(f"Итерация {log['iteration']}:")
-                print('\tФерамоны:', log['pheramone'])
-                print('\tДоступные пути:', log['paths'])
-                print('\tДлина путей:', log['path_lengths'])
+            draw_graph(G)
         case '3':
             break
         case __:
             print(MESSAGE_ERROR)
-
-draw_graph(G)

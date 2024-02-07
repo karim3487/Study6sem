@@ -58,10 +58,10 @@ function init() {
 
     // cria nodo raiz
     root = new Node();
-    root.x = (surface.largura - larguraNodo) / 2;
+    root.x = (surface.largura - nodeWidth) / 2;
     root.y = 50;
     root.nivel = 0;
-    root.y = root.nivel * (alturaNodo + espacoNivel) + 50;
+    root.y = root.nivel * (nodeHeight + rowHeight) + 50;
 
     // adiciona raiz à lista de nodos
     nodes.add(root);
@@ -83,16 +83,16 @@ function ckmouse(e) {
 
     $(divOpcoes).hide();
 
-    var nodo = null;
+    var node = null;
     for (var i = 0; i < nodes.length; i++) {
-        if (isInCircle(e.offsetX, e.offsetY, nodes[i].x, nodes[i].y, larguraNodo / 2)) {
+        if (isInCircle(e.offsetX, e.offsetY, nodes[i].x, nodes[i].y, nodeWidth / 2)) {
             //alert(e.offsetX + " | " + e.offsetY);
-            nodo = nodes[i];
+            node = nodes[i];
             break;
         }
     }
 
-    if (nodo == null) {
+    if (node == null) {
         return;
     }
 
@@ -102,26 +102,26 @@ function ckmouse(e) {
     div.innerHTML = "Добавить дочерний узел";
     $(div).bind('click', function() {
         $(divOpcoes).hide();
-        adicionarFilho(nodo.pk);
+        adicionarFilho(node.pk);
     });
     $(divOpcoes).append(div);
 
-    if (nodo.filhos.isEmpty()) {
+    if (node.filhos.isEmpty()) {
         div = document.createElement('div');
         div.innerHTML = "Изменить значение";
         $(div).bind('click', function() {
             $(divOpcoes).hide();
-            editar(nodo.pk);
+            editar(node.pk);
         });
         $(divOpcoes).append(div);
     }
 
-    if (nodo.pk != root.pk) {
+    if (node.pk != root.pk) {
         div = document.createElement('div');
         div.innerHTML = "Удалить узел";
         $(div).bind('click', function() {
             $(divOpcoes).hide();
-            excluirNodo(nodo.pk, true);
+            excluirNodo(node.pk, true);
         });
         $(divOpcoes).append(div);
     }
@@ -136,7 +136,7 @@ function ckmouse(e) {
 
 function Node() {
     this.pk;
-    this.valor = null;
+    this.value = null;
     this.quebra = false;
     this.pai = null;
     this.filhos = new Array();
@@ -145,7 +145,7 @@ function Node() {
     this.y;
     this.nivel;
 
-    this.draw = drawNodo;
+    this.draw = drawNode;
 
     obterPK(this);
 }
@@ -167,21 +167,21 @@ function adicionarFilho(pkPai) {
     var pai = findByPK(pkPai);
     if (pai == null) {
         // TODO erro
-        alert("Erro");
+        alert("Error");
         return false;
     }
-    var nodo = new Node();
-    nodo.pai = pai;
-    pai.filhos.add(nodo);
-    nodes.add(nodo);
-    nodo.nivel = pai.nivel + 1;
-    nodo.y = nodo.nivel * (alturaNodo + espacoNivel) + 50;
-    pai.valor = null;
+    var node = new Node();
+    node.pai = pai;
+    pai.filhos.add(node);
+    nodes.add(node);
+    node.nivel = pai.nivel + 1;
+    node.y = node.nivel * (nodeHeight + rowHeight) + 50;
+    pai.value = null;
 
     var t = document.getElementById('drawing')
     var height = t.height;
-    var temp = nodo.y;
-    if (nodo.nivel > 7) {
+    var temp = node.y;
+    if (node.nivel > 7) {
         if ((temp + 50) > height) {
             t.height = temp + 50;
             surface.altura = temp + 50;
@@ -191,17 +191,17 @@ function adicionarFilho(pkPai) {
     surface.draw();
 }
 
-function reorganiza(nodo) {
-    if (nodo.pk != root.pk) {
-        pai = nodo.pai;
+function reorganiza(node) {
+    if (node.pk != root.pk) {
+        pai = node.pai;
         // se for filho unico, x = x do pai
         if (pai.filhos.length == 1) {
-            nodo.x = pai.x;
+            node.x = pai.x;
         } else {
 
             var posInicial = 0;
             var quant = pai.filhos.length;
-            var larg = (pai.x + larguraNodo / 2) * 2;
+            var larg = (pai.x + nodeWidth / 2) * 2;
 
             // se não for raiz
             if (pai.pk != 1) {
@@ -215,19 +215,19 @@ function reorganiza(nodo) {
                     if (paiCalculo.pai.filhos.length > 1) {
                         var paiAnt = paiCalculo.pai.filhos[pos + 1];
                         larg = paiAnt.x - paiCalculo.x;
-                        posInicial = paiCalculo.x - larg / 2 + larguraNodo;
-                        larg -= larguraNodo;
+                        posInicial = paiCalculo.x - larg / 2 + nodeWidth;
+                        larg -= nodeWidth;
                     }
                 } else {
                     var paiAnt = paiCalculo.pai.filhos[pos - 1];
                     larg = paiCalculo.x - paiAnt.x;
-                    posInicial = larg / 2 + larguraNodo + paiAnt.x;
-                    larg -= larguraNodo;
+                    posInicial = larg / 2 + nodeWidth + paiAnt.x;
+                    larg -= nodeWidth;
                 }
             }
 
             var largNodo = larg / quant; // se menor q 50, n deixa add
-            var nodoX = largNodo / 2 - larguraNodo / 2;
+            var nodoX = largNodo / 2 - nodeWidth / 2;
             var acum = posInicial;
             for (var i = 0; i < quant; i++) {
                 pai.filhos[i].x = acum + nodoX;
@@ -236,9 +236,9 @@ function reorganiza(nodo) {
         }
     }
 
-    if (!nodo.filhos.isEmpty()) {
-        for (var i = 0; i < nodo.filhos.length; i++) {
-            reorganiza(nodo.filhos[i]);
+    if (!node.filhos.isEmpty()) {
+        for (var i = 0; i < node.filhos.length; i++) {
+            reorganiza(node.filhos[i]);
         }
     }
 }
@@ -309,13 +309,13 @@ function editar(pkNodo) {
         alert("Узла не существует");
         return false;
     }
-    var valor = prompt("Введите число:");
+    var value = prompt("Введите число:");
 
-    if (!isNumber(valor)) {
+    if (!isNumber(value)) {
         alert("Это не число.");
         return;
     }
-    nodo.valor = valor;
+    nodo.value = value;
 
     surface.draw();
 }
@@ -323,7 +323,7 @@ function editar(pkNodo) {
 function folhasPreenchidas() {
     for (var i = 0; i < nodes.length; i++) {
         var nodo = nodes[i];
-        if (nodo.filhos.isEmpty() && nodo.valor == null) {
+        if (nodo.filhos.isEmpty() && nodo.value == null) {
             alert("Вы должны установить значение для всех конечных узлов.");
             return false;
         }
@@ -406,11 +406,11 @@ function finalizarExecucao() {
     $("#menu_principal").show();
 }
 
-function limpaValoresEQuebras() {
+function limpavalueesEQuebras() {
     for (var i = 0; i < nodes.length; i++) {
         nodes[i].quebra = false;
         if (!nodes[i].filhos.isEmpty()) {
-            nodes[i].valor = null;
+            nodes[i].value = null;
         }
     }
 
@@ -420,7 +420,7 @@ function limpaValoresEQuebras() {
 function clonaNodo(nodo, newPai) {
     var n = new Node();
     //n.pk = nodo.pk;
-    n.valor = nodo.valor;
+    n.value = nodo.value;
     n.quebra = nodo.quebra;
     n.pai = newPai;
     n.filhos = new Array();
@@ -470,7 +470,7 @@ function getEstadoAtual(nodoAtual) {
 
 function criaMiniMax() {
     if (folhasPreenchidas()) {
-        limpaValoresEQuebras();
+        limpavalueesEQuebras();
         execucao = new Array();
         focoExecucao = new Array();
         execucaoPassoAtual = 0;
@@ -492,22 +492,22 @@ function minimax(nodo) {
     if (nodo == root) {
         return;
     }
-    if (nodo.pai.valor == null) {
-        nodo.pai.valor = nodo.valor;
+    if (nodo.pai.value == null) {
+        nodo.pai.value = nodo.value;
     } else {
         var max = false;
         if (nodo.nivel % 2 == 0) {
             max = true;
         }
-        var valorNodo = Math.floor(nodo.valor);
-        var valorPai = Math.floor(nodo.pai.valor);
+        var valueNodo = Math.floor(nodo.value);
+        var valuePai = Math.floor(nodo.pai.value);
         if (max) {
-            if (valorNodo < valorPai) {
-                nodo.pai.valor = nodo.valor;
+            if (valueNodo < valuePai) {
+                nodo.pai.value = nodo.value;
             }
         } else {
-            if (valorNodo > valorPai) {
-                nodo.pai.valor = nodo.valor;
+            if (valueNodo > valuePai) {
+                nodo.pai.value = nodo.value;
             }
         }
     }
@@ -517,7 +517,7 @@ function minimax(nodo) {
 
 function criaPoda() {
     if (folhasPreenchidas()) {
-        limpaValoresEQuebras();
+        limpavalueesEQuebras();
         execucao = new Array();
         focoExecucao = new Array();
         execucaoPassoAtual = 0;
@@ -550,18 +550,18 @@ function poda(nodo) {
         max = true;
     }
 
-    if (nodo.pai.valor == null) {
-        nodo.pai.valor = nodo.valor;
+    if (nodo.pai.value == null) {
+        nodo.pai.value = nodo.value;
     } else {
-        var valorNodo = Math.floor(nodo.valor);
-        var valorPai = Math.floor(nodo.pai.valor);
+        var valueNodo = Math.floor(nodo.value);
+        var valuePai = Math.floor(nodo.pai.value);
         if (max) {
-            if (valorNodo < valorPai) {
-                nodo.pai.valor = nodo.valor;
+            if (valueNodo < valuePai) {
+                nodo.pai.value = nodo.value;
             }
         } else {
-            if (valorNodo > valorPai) {
-                nodo.pai.valor = nodo.valor;
+            if (valueNodo > valuePai) {
+                nodo.pai.value = nodo.value;
             }
         }
     }
@@ -577,20 +577,20 @@ function testaPodaPai(nodo, max) {
         return;
     }
 
-    var valor = nodo.pai.valor;
+    var value = nodo.pai.value;
     var quebra = false;
 
     var nodoAux = nodo.pai.pai;
     while (nodoAux != null) {
         if ((nodoAux.nivel % 2 == 0) == max) {
-            if (nodoAux.valor != null) {
+            if (nodoAux.value != null) {
                 if (max) {
-                    if (Math.floor(valor) <= Math.floor(nodoAux.valor)) {
+                    if (Math.floor(value) <= Math.floor(nodoAux.value)) {
                         quebra = true;
                         break;
                     }
                 } else {
-                    if (Math.floor(valor) >= Math.floor(nodoAux.valor)) {
+                    if (Math.floor(value) >= Math.floor(nodoAux.value)) {
                         quebra = true;
                         break;
                     }
@@ -601,7 +601,7 @@ function testaPodaPai(nodo, max) {
     }
 
     if (quebra) {
-        console.log(nodo.valor + " | " + nodo.nivel);
+        console.log(nodo.value + " | " + nodo.nivel);
         return true;
     }
 
@@ -612,12 +612,12 @@ function Tela(largura, altura) {
     this.largura = largura;
     this.altura = altura;
 
-    this.draw = drawTela;
+    this.draw = drawScreen;
 }
 
-function drawTela(nodoList) {
-    if (!nodoList) {
-        nodoList = nodes;
+function drawScreen(nodesList) {
+    if (!nodesList) {
+        nodesList = nodes;
     }
 
     reorganizaNew(root);
@@ -629,28 +629,28 @@ function drawTela(nodoList) {
     context.closePath();
 
     maxNivel = 0;
-    for (var i = 0; i < nodoList.length; i++) {
-        if (nodoList[i].nivel > maxNivel) {
-            maxNivel = nodoList[i].nivel;
+    for (var i = 0; i < nodesList.length; i++) {
+        if (nodesList[i].nivel > maxNivel) {
+            maxNivel = nodesList[i].nivel;
         }
     }
 
 
-    for (var i = 0; i < nodoList.length; i++) {
-        if (nodoList[i].pai != null) {
+    for (var i = 0; i < nodesList.length; i++) {
+        if (nodesList[i].pai != null) {
             context.beginPath();
             context.strokeStyle = "black";
-            context.moveTo(nodoList[i].x, nodoList[i].y);
-            context.lineTo(nodoList[i].pai.x, nodoList[i].pai.y);
+            context.moveTo(nodesList[i].x, nodesList[i].y);
+            context.lineTo(nodesList[i].pai.x, nodesList[i].pai.y);
             context.stroke();
             context.closePath();
 
             // se nodo possui quebra, desenha o X
-            if (nodoList[i].quebra) {
+            if (nodesList[i].quebra) {
                 context.beginPath();
                 context.strokeStyle = "red";
-                var centroX = (Math.floor(nodoList[i].x) + Math.floor(nodoList[i].pai.x)) / 2;
-                var centroY = (Math.floor(nodoList[i].y) + Math.floor(nodoList[i].pai.y)) / 2
+                var centroX = (Math.floor(nodesList[i].x) + Math.floor(nodesList[i].pai.x)) / 2;
+                var centroY = (Math.floor(nodesList[i].y) + Math.floor(nodesList[i].pai.y)) / 2
                 context.moveTo(centroX - 10, centroY - 10);
                 context.lineTo(centroX + 10, centroY + 10);
 
@@ -665,8 +665,8 @@ function drawTela(nodoList) {
         }
     }
 
-    for (var i = 0; i < nodoList.length; i++) {
-        nodoList[i].draw();
+    for (var i = 0; i < nodesList.length; i++) {
+        nodesList[i].draw();
     }
 
 
@@ -675,19 +675,19 @@ function drawTela(nodoList) {
         context.strokeStyle = "rgba(200,200,200, 0.4);"
         context.font = "bold 22px 'Arial'";
 
-        var str = new String(this.valor);
+        var str = new String(this.value);
 
-        context.fillText((i % 2 ? "MIN" : "MAX"), 30, (espacoNivel + alturaNodo) + i * (espacoNivel + alturaNodo) - 17);
-        context.fillText((i % 2 ? " MIN" : "MAX"), 926, (espacoNivel + alturaNodo) + i * (espacoNivel + alturaNodo) - 17);
+        context.fillText((i % 2 ? "MIN" : "MAX"), 30, (rowHeight + nodeHeight) + i * (rowHeight + nodeHeight) - 17);
+        context.fillText((i % 2 ? " MIN" : "MAX"), 926, (rowHeight + nodeHeight) + i * (rowHeight + nodeHeight) - 17);
 
-        context.moveTo(30, (espacoNivel + alturaNodo) + i * (espacoNivel + alturaNodo) + 15);
-        context.lineTo(970, (espacoNivel + alturaNodo) + i * (espacoNivel + alturaNodo) + 15);
+        context.moveTo(30, (rowHeight + nodeHeight) + i * (rowHeight + nodeHeight) + 15);
+        context.lineTo(970, (rowHeight + nodeHeight) + i * (rowHeight + nodeHeight) + 15);
         context.stroke();
 
     }
 }
 
-function drawNodo(color) {
+function drawNode(color) {
     if (!color) {
         color = "black"
         fillstyle = "white";
@@ -698,37 +698,37 @@ function drawNodo(color) {
     }
     context.fillStyle = firstfill;
     context.strokeStyle = color;
-    var y = this.nivel * (alturaNodo + espacoNivel) + 50;
+    var y = this.nivel * (nodeHeight + rowHeight) + 50;
     context.beginPath();
-    context.arc(this.x, this.y, alturaNodo / 2 + 2, 0, 2 * Math.PI, false);
+    context.arc(this.x, this.y, nodeHeight / 2 + 2, 0, 2 * Math.PI, false);
     context.fill();
     context.closePath();
 
     context.fillStyle = fillstyle;
     context.beginPath();
     //context.strokeRect(this.x, y, larguraNodo, alturaNodo);
-    context.arc(this.x, this.y, alturaNodo / 2, 0, 2 * Math.PI, false);
+    context.arc(this.x, this.y, nodeHeight / 2, 0, 2 * Math.PI, false);
     context.stroke();
     context.fill();
     context.closePath();
 
-    if (this.valor != null) {
+    if (this.value != null) {
         context.fillStyle = "blue";
         context.font = "bold 13px 'Courier New'";
 
-        var str = new String(this.valor);
+        var str = new String(this.value);
         var pxLetra = 8;
         var larg = pxLetra * str.length;
 
-        context.fillText(this.valor, this.x - larg / 2, this.y + 4);
+        context.fillText(this.value, this.x - larg / 2, this.y + 4);
     }
 }
 
 function excluirTudo() {
-    limpaValoresEQuebras();
+    limpavalueesEQuebras();
     nodes.remove(1, nodes.length - 1);
-    nodes[0].x = (surface.largura - larguraNodo) / 2;
-    nodes[0].valor = null;
+    nodes[0].x = (surface.largura - nodeWidth) / 2;
+    nodes[0].value = null;
     nodes[0].filhos = new Array();
     sequence = 1;
     var execucao = new Array();
@@ -796,27 +796,27 @@ function gerarExemplo() {
     adicionarFilho(15);
 
 
-    nodes[15].valor = 8;
-    nodes[16].valor = 23;
-    nodes[17].valor = -47;
-    nodes[18].valor = 28;
-    nodes[19].valor = -30;
-    nodes[20].valor = -37;
-    nodes[21].valor = 3;
-    nodes[22].valor = -41;
-    nodes[23].valor = -19;
-    nodes[24].valor = 4;
-    nodes[25].valor = -49;
-    nodes[26].valor = 4;
-    nodes[27].valor = 43;
-    nodes[28].valor = 45;
-    nodes[29].valor = -26;
-    nodes[30].valor = -14;
+    nodes[15].value = 8;
+    nodes[16].value = 23;
+    nodes[17].value = -47;
+    nodes[18].value = 28;
+    nodes[19].value = -30;
+    nodes[20].value = -37;
+    nodes[21].value = 3;
+    nodes[22].value = -41;
+    nodes[23].value = -19;
+    nodes[24].value = 4;
+    nodes[25].value = -49;
+    nodes[26].value = 4;
+    nodes[27].value = 43;
+    nodes[28].value = 45;
+    nodes[29].value = -26;
+    nodes[30].value = -14;
 
     surface.draw();
 }
 
 
-var larguraNodo = 25;
-var alturaNodo = 25;
-var espacoNivel = 50
+var nodeWidth = 25;
+var nodeHeight = 25;
+var rowHeight = 50
